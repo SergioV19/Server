@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 app.use(express.json())
 
 const routes = require('./routes')
-app.set('port', 3000)
+const PORT = process.env.PORT || 3000
 
 
 
@@ -17,6 +17,6 @@ app.get('/', (req, res) => {
 app.use('/api', routes)
 
 //Runnig
-app.listen(app.get('port'), () => {
-    console.log('server running on port ', app.get('port'))
+app.listen(app.get(PORT), () => {
+    console.log(`server running on port ${PORT}`)
 }) 

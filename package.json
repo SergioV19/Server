@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "postinstall": "npm run build"
+    "postinstall": "npm i nodemon"
   },
   "keywords": [],
   "author": "",

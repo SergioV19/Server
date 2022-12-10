@@ -21,9 +21,26 @@ const { Router } = require('express')
 //     })
 //     res.send(get)
 // })
-
+const verifyToken = async (req, res, next) => {
+    try {
+        if (!req.headers.authorization) return res.status(403).json({ message: 'No token provided' })
+        const token = req.headers.authorization.replace('Bearer ', '')
+        const decoded = jwt.verify(token, "Secret_word")
+        const user = await prisma.usuarios.findMany({
+        
+            where: {
+                "ID_USUARIOS": decoded.id
+            }
+        })
+        if (!user) return res.status(404).json({ message: 'User not found' })
+        req.user = user;
+        next()
+    } catch (err) {
+        res.status(400).json({ message: err.message })
+    }
+}
 //traer usuario por nombre
-routes.get('/name', async (req, res) => {
+routes.get('/name',[verifyToken], async (req, res) => {
     const name = req.body.name
     const get = await prisma.usuarios.findMany({
         where: {
@@ -34,7 +51,7 @@ routes.get('/name', async (req, res) => {
 })
 
 //traer usuario por correo
-routes.get('/mail', async (req, res) => {
+routes.get('/mail',[verifyToken], async (req, res) => {
     const mail = req.body.name
     const get = await prisma.usuarios.findMany({
         where: {
@@ -77,7 +94,7 @@ routes.post('/', async (req, res) => {
 })
 
 //Actualizar usuario
-routes.patch('/:id', async (req, res) => {
+routes.patch('/:id', [verifyToken],async (req, res) => {
     const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE } = req.body
     const id = Number(req.params.id)
 
@@ -106,7 +123,7 @@ routes.patch('/:id', async (req, res) => {
 })
 
 //Eliminar usuario
-routes.patch('/delete/', async (req, res) => {
+routes.patch('/delete/', [verifyToken],async (req, res) => {
     // routes.patch('/delete/:id', async (req, res) => {
     console.log('entra')
 
@@ -137,7 +154,7 @@ routes.patch('/delete/', async (req, res) => {
 })
 
 //ACTUALIZAR ESTADO de un atributo
-routes.patch('/:id', (req, res) => {
+routes.patch('/:id',[verifyToken], (req, res) => {
     let id = Number(req.params.id)
     req.getConnection((err, conn) => {
         if (err) return res.send(err)
@@ -149,7 +166,7 @@ routes.patch('/:id', (req, res) => {
 })
 
 //Obtener páginas de usuarios
-routes.get('/page/:num', async (req, res) => {
+routes.get('/page/:num',[verifyToken], async (req, res) => {
     const page = req.params.num
     const min = ((page - 1) * 100)
     const get = await prisma.usuarios.findMany({
@@ -160,7 +177,7 @@ routes.get('/page/:num', async (req, res) => {
 })
 
 //Obtener página de usuario activo
-routes.get('/pageActive/:num', async (req, res) => {
+routes.get('/pageActive/:num',[verifyToken], async (req, res) => {
     const page = req.params.num
     const min = ((page - 1) * 100)
     const get = await prisma.usuarios.findMany({
@@ -172,7 +189,7 @@ routes.get('/pageActive/:num', async (req, res) => {
 })
 
 //Agregar rol
-routes.post('/rol', async (req, res) => {
+routes.post('/rol',[verifyToken], async (req, res) => {
     const { NAME, DESCRIPTION, STATE } = req.body
     const post = await prisma.rol.create({
         data: {
@@ -183,13 +200,13 @@ routes.post('/rol', async (req, res) => {
 })
 
 //obtener todos los roles
-routes.get('/rols', async (req, res) => {
+routes.get('/rols', [verifyToken],async (req, res) => {
     const get = await prisma.rol.findMany()
     res.send(get)
 })
 
 //obtener rol por id
-routes.get('/rol', async (req, res) => {
+routes.get('/rol',[verifyToken], async (req, res) => {
     const { ID_ROL } = req.body
     const get = await prisma.rol.findMany({
         where: { ID_ROL: ID_ROL }
@@ -197,7 +214,7 @@ routes.get('/rol', async (req, res) => {
 })
 
 //editar rol
-routes.patch('/rol', async (req, res) => {
+routes.patch('/rol',[verifyToken], async (req, res) => {
     const { ID_ROL, NAME, DESCRIPTION, STATE } = req.body
     const set = await prisma.rol.update({
         where: { ID_ROL: ID_ROL },
@@ -208,7 +225,7 @@ routes.patch('/rol', async (req, res) => {
 })
 
 //agregar rol a un usuario
-routes.post('/userRol', async (req, res) => {
+routes.post('/userRol',[verifyToken], async (req, res) => {
     const { ID_USUARIOS, ID_ROL, STATE } = req.body
     const post = await prisma.ussers_rol.create({
         data: {
@@ -219,7 +236,7 @@ routes.post('/userRol', async (req, res) => {
 })
 
 //ver roles de un usuario
-routes.get('/userRol', async (req, res) => {
+routes.get('/userRol',[verifyToken], async (req, res) => {
     const { ID_USUARIOS } = req.body
     const get = await prisma.ussers_rol.findMany({
         where: { ID_USUARIOS: ID_USUARIOS }
@@ -228,19 +245,46 @@ routes.get('/userRol', async (req, res) => {
 })
 
 //SIGN
-routes.post("/login"), (req, res) => {
+routes.post('/login', async(req, res) => {
     const { EMAIL, PASSWORD } = req.body;
-    if (!EMAIL || !PASSWORD) return res.sendStatus(400)
-    try {
-        const { guid } = authByEmailPwd(EMAIL, PASSWORD)
-        const jwt = jwtConstructor.setProtectedHeader({ alg: 'hs256', typ: 'jwt' })
-            .setIssuedAt()
-            .setExpirationTime('1h').sign(procces.HASH)
+    const get = await prisma.usuarios.findMany({
+        
+        where: {
+            "EMAIL": EMAIL
+        }
+    })
+    const getPassword= await prisma.autentication.findMany({
+        where: {
+            "ID_USUARIO": get[0].ID_USUARIOS
+        }
+    })
+    if(get.length>0&&await bcryptjs.compare(PASSWORD,getPassword[0].HASH) ){
+        const token = jwt.sign({ id: get[0].ID_USUARIOS }, "Secret_word", {
+            expiresIn: "1h"
+        })
+    
+    const rol = await prisma.rol.findMany({
+        where: {
+            "ID_ROL":get[0].ID_ROL}
+    })
 
-    } catch (error) {
-        return res.sendStatus(401)
+        res.status(200).json(
+            {token:token,rol:rol[0].NAME,name:get[0].NAME
+            })
     }
-}
+    // if (!EMAIL || !PASSWORD) return res.sendStatus(400)
+    //res.status(200).json({token:token})
+    // try {
+    //     const { guid } = authByEmailPwd(EMAIL, PASSWORD)
+    //     const jwt = jwtConstructor.setProtectedHeader({ alg: 'hs256', typ: 'jwt' })
+    //         .setIssuedAt()
+    //         .setExpirationTime('1h').sign(procces.HASH)
+
+    // } catch (error) {
+    //     return res.sendStatus(401)
+    // }
+})
+    
 
 // //Authorizacion: Bearer <token>
 // function verifyToken(req, res, next) {

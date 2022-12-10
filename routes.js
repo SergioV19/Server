@@ -227,46 +227,45 @@ routes.get('/userRol', async (req, res) => {
     res.send(get)
 })
 
-/*//SIGN
-routes.route('/login').post(async (req, res) => {
+//SIGN
+routes.post("/login"), (req, res) => {
+    const { EMAIL, PASSWORD } = req.body;
+    if (!EMAIL || !PASSWORD) return res.sendStatus(400)
     try {
-        const { EMAIL, PASSWORD } = req.body
-        const search = await routes.findOne({ EMAIL })
-        const tokesession = await verifyToken(req.body)
-        const data = await routes.query('SELECT * FROM users EMAIL = ?')
-    } catch (error) {
-    }
-    jwt.sign({data},'secretKey',{expiresIn: '86400s'},(err,token)=>{
-      res.json({
-           token
-          })
-        })
-})
+        const { guid } = authByEmailPwd(EMAIL, PASSWORD)
+        const jwt = jwtConstructor.setProtectedHeader({ alg: 'hs256', typ: 'jwt' })
+            .setIssuedAt()
+            .setExpirationTime('1h').sign(procces.HASH)
 
-//Authorizacion: Bearer <token>
-function verifyToken(req, res, next) {
-    const bearerHeader = req.headers['authorizacion']
-    if (typeof bearerHeader != 'undefined') {
-        const bearerToken = bearerHeader.split(" ")[1]
-        req.token = bearerToken
-        next()
-    } else {
-        res.sendStatus(403)
+    } catch (error) {
+        return res.sendStatus(401)
     }
 }
 
-routes.post("/api/posts", verifyToken, (req, res) => {
-    jwt.verify(req.token, 'secretKey', (error, authData) => {
-        if (error) {
-            res.sendStatus(403)
-        } else {
-            res.json({
-                authData
-            })
-        }
-    })
-})
-*/
+// //Authorizacion: Bearer <token>
+// function verifyToken(req, res, next) {
+//     const bearerHeader = req.headers['authorizacion']
+//     if (typeof bearerHeader != 'undefined') {
+//         const bearerToken = bearerHeader.split(" ")[1]
+//         req.token = bearerToken
+//         next()
+//     } else {
+//         res.sendStatus(403)
+//     }
+// }
+
+// routes.post("/api/posts", verifyToken, (req, res) => {
+//     jwt.verify(req.token, 'secretKey', (error, authData) => {
+//         if (error) {
+//             res.sendStatus(403)
+//         } else {
+//             res.json({
+//                 authData
+//             })
+//         }
+//     })
+// })
+
 
 /*
 routes.post("/login"),(req,res)=>{

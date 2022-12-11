@@ -11,6 +11,8 @@ const cors = require('cors')
 routes.use(cors())
 // const{SignJWT} = require('jose')
 const { Router } = require('express')
+
+// const {isAdmin} = require('./checkRol')
 //TRAER USUARIO por id
 // routes.get('/', async (req, res) => {
 //     const id = req.body.id
@@ -21,6 +23,7 @@ const { Router } = require('express')
 //     })
 //     res.send(get)
 // })
+
 const verifyToken = async (req, res, next) => {
     try {
         if (!req.headers.authorization) return res.status(403).json({ message: 'No token provided' })
@@ -38,6 +41,36 @@ const verifyToken = async (req, res, next) => {
     } catch (err) {
         res.status(400).json({ message: err.message })
     }
+}
+
+ const isSalesman = async (req, res, next) => {
+   
+    if(req.user.rol === "SALESMAN") {
+        next()
+        return;
+    }
+
+    res.status(401).json({ message: 'Salesman rol is required' })
+}
+
+ const isAdmin = async (req, res, next) => {
+
+    if(req.user.rol === "ADMIN" ) {
+        next()
+        return;
+    }
+
+    res.status(401).json({ message: 'Admin rol is required' })
+}   
+
+ const hasAnyRol = async (req, res, next) => {
+
+    if(req.user.rol === "SALESMAN" || req.user.rol === "ADMIN") {
+        next()
+        return;
+    }
+
+    res.status(401).json({ message: 'Salesman or Admin rol is required' })
 }
 //traer usuario por nombre
 routes.get('/name',[verifyToken], async (req, res) => {
@@ -123,7 +156,7 @@ routes.patch('/:id', [verifyToken],async (req, res) => {
 })
 
 //Eliminar usuario
-routes.patch('/delete/', [verifyToken],async (req, res) => {
+routes.patch('/delete/', [verifyToken,isAdmin],async (req, res) => {
     // routes.patch('/delete/:id', async (req, res) => {
     console.log('entra')
 

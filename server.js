@@ -3,7 +3,9 @@ const app = express()
 const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 app.use(express.json())
-
+app.use(cors({
+    origin:'*'
+}));
 const routes = require('./routes')
 const PORT = process.env.PORT || 3000;
 

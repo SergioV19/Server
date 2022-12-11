@@ -8,7 +8,11 @@ routes.use(express.json())
 const bcryptjs = require('bcryptjs')
 routes.use(express.urlencoded({ extended: false }))
 const cors = require('cors')
-routes.use(cors())
+routes.use(cors({
+    origin:'*'
+}));
+
+
 // const{SignJWT} = require('jose')
 const { Router } = require('express')
 

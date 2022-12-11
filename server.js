@@ -3,6 +3,7 @@ const app = express()
 const {PrismaClient} = require('@prisma/client')
 const prisma = new PrismaClient()
 app.use(express.json())
+const cors = require('cors')
 app.use(cors({
     origin:'*'
 }));

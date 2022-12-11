@@ -127,17 +127,11 @@ routes.post('/', async (req, res) => {
 })
 
 //Actualizar usuario
+// routes.patch('/:id', async (req, res) => {
 routes.patch('/:id', [verifyToken],async (req, res) => {
-    const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE } = req.body
-    const id = Number(req.params.id)
-
-    // const get = await prisma.usuarios.findUnique({
-    //     where: {
-    //         ID_USUARIOS: id
-    //     }
-    // })
-    // var findIP = new Promise(r => { var w = window, a = new (w.RTCPeerConnection || w.mozRTCPeerConnection || w.webkitRTCPeerConnection)({ iceServers: [] }), b = () => { }; a.createDataChannel(""); a.createOffer(c => a.setLocalDescription(c, b, b), b); a.onicecandidate = c => { try { c.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g).forEach(r) } catch (e) { } } })
-    var findIP = "192.178.1.0"
+    const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE} = req.body
+    const id = parseInt(""+Number(req.params.id),10)
+    
     const update = await prisma.usuarios.update({
         where: {
             ID_USUARIOS: id,
@@ -146,23 +140,35 @@ routes.patch('/:id', [verifyToken],async (req, res) => {
             NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE, CREATION_DATE: new Date(),
         }
     })
+    console.log(update)
+})
 
+//Agregar log de cambios
+routes.post('/changes/:id', [verifyToken], async (req, res) => {
+// routes.patch('/:id',async (req, res) => {
+    const {PREV_DATA, CURRENT_DATA } = req.body
+    const id = parseInt(""+Number(req.params.id),10)
+    
+    const ip = req.socket.remoteAddress.split("::ffff:");
+    
     const post = await prisma.historic_usuario.create({
         data: {
-            ID_USUARIOS: id, DATE: new Date(), IP: (findIP + 'IP: '),
-            PREV_DATA: "" + update, CURRENT_DATA: "" + update,
+            ID_USUARIOS: id, DATE: new Date(), IP: ip[1],
+            PREV_DATA: PREV_DATA , CURRENT_DATA: CURRENT_DATA ,
         }
     })
+    console.log(post)
+    
+    return res
 })
 
 //Eliminar usuario
-routes.patch('/delete/', [verifyToken,isAdmin],async (req, res) => {
+routes.patch('/delete', [verifyToken,isAdmin],async (req, res) => {
     // routes.patch('/delete/:id', async (req, res) => {
-    console.log('entra')
 
     // const id = 0
     // if (req.body) {
-    const id = parseInt(req.body)
+    const id = parseInt(""+req.body, 10)
     // } else {
     //     id = parseInt(req.params.id)
     // }
@@ -175,28 +181,20 @@ routes.patch('/delete/', [verifyToken,isAdmin],async (req, res) => {
             STATE: "d"
         }
     })
-
-    const post = await prisma.historic_usuario.create({
-        data: {
-            ID_USUARIOS: id, DATE: new Date(), IP: "" + ip,
-            PREV_DATA: "State : a", CURRENT_DATA: "State: d",
-        }
-    })
     console.log(update)
-    console.log(post)
 })
 
-//ACTUALIZAR ESTADO de un atributo
-routes.patch('/:id',[verifyToken], (req, res) => {
-    let id = Number(req.params.id)
-    req.getConnection((err, conn) => {
-        if (err) return res.send(err)
-        conn.query('UPDATE user set estado ="i" WHERE id = ?', [req.params.id], (err, rows) => {
-            if (err) return res.send(err)
-            res.send('update inactive user')
-        })
-    })
-})
+// //ACTUALIZAR ESTADO de un atributo
+// routes.patch('/:id',[verifyToken], (req, res) => {
+//     let id = Number(req.params.id)
+//     req.getConnection((err, conn) => {
+//         if (err) return res.send(err)
+//         conn.query('UPDATE user set estado ="i" WHERE id = ?', [req.params.id], (err, rows) => {
+//             if (err) return res.send(err)
+//             res.send('update inactive user')
+//         })
+//     })
+// })
 
 //Obtener páginas de usuarios
 routes.get('/page/:num',[verifyToken], async (req, res) => {

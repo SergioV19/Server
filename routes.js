@@ -197,7 +197,7 @@ routes.patch('/delete', [verifyToken,isAdmin],async (req, res) => {
 // })
 
 //Obtener páginas de usuarios
-routes.get('/page/:num',[verifyToken], async (req, res) => {
+routes.get('/page/:num', async (req, res) => {
     const page = req.params.num
     const min = ((page - 1) * 100)
     const get = await prisma.usuarios.findMany({

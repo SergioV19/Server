@@ -129,9 +129,15 @@ routes.post('/usr', async (req, res) => {
         }
     })
 
+    const autorol = await prisma.ussers_rol.create({
+        data: {
+            ID_USUARIOS: parseInt(id,10), ID_ROL: "3", STATE: "a"
+        }
+    })
 
     console.log(post)
     console.log(postpass)
+    console.log(autorol)
 })
 
 //Actualizar usuario

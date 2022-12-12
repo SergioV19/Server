@@ -138,6 +138,10 @@ routes.post('/usr', async (req, res) => {
     console.log(post)
     console.log(postpass)
     console.log(autorol)
+    res.status(200).json(
+        {
+            NAME: NAME, CREATION_DATE: new Date(), CREDENTIAL: "a"
+        })
 })
 
 //Actualizar usuario

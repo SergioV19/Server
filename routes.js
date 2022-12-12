@@ -9,7 +9,7 @@ const bcryptjs = require('bcryptjs')
 routes.use(express.urlencoded({ extended: false }))
 const cors = require('cors')
 routes.use(cors({
-    origin:'*'
+    origin: '*'
 }));
 
 
@@ -34,7 +34,7 @@ const verifyToken = async (req, res, next) => {
         const token = req.headers.authorization.replace('Bearer ', '')
         const decoded = jwt.verify(token, "Secret_word")
         const user = await prisma.usuarios.findMany({
-        
+
             where: {
                 "ID_USUARIOS": decoded.id
             }
@@ -47,29 +47,29 @@ const verifyToken = async (req, res, next) => {
     }
 }
 
- const isSalesman = async (req, res, next) => {
-   
-    if(req.user.rol === "SALESMAN") {
+const isSalesman = async (req, res, next) => {
+
+    if (req.user.rol === "COSTUMER") {
         next()
         return;
     }
 
-    res.status(401).json({ message: 'Salesman rol is required' })
+    res.status(401).json({ message: 'Costumer rol is required' })
 }
 
- const isAdmin = async (req, res, next) => {
+const isAdmin = async (req, res, next) => {
 
-    if(req.user.rol === "ADMIN" ) {
+    if (req.user.rol === "ADMIN") {
         next()
         return;
     }
 
     res.status(401).json({ message: 'Admin rol is required' })
-}   
+}
 
- const hasAnyRol = async (req, res, next) => {
+const hasAnyRol = async (req, res, next) => {
 
-    if(req.user.rol === "SALESMAN" || req.user.rol === "ADMIN") {
+    if (req.user.rol === "COSTUMER" || req.user.rol === "ADMIN") {
         next()
         return;
     }
@@ -77,7 +77,7 @@ const verifyToken = async (req, res, next) => {
     res.status(401).json({ message: 'Salesman or Admin rol is required' })
 }
 //traer usuario por nombre
-routes.get('/name',[verifyToken], async (req, res) => {
+routes.get('/name', [verifyToken], async (req, res) => {
     const name = req.body.name
     const get = await prisma.usuarios.findMany({
         where: {
@@ -88,7 +88,7 @@ routes.get('/name',[verifyToken], async (req, res) => {
 })
 
 //traer usuario por correo
-routes.get('/mail',[verifyToken], async (req, res) => {
+routes.get('/mail', [verifyToken], async (req, res) => {
     const mail = req.body.name
     const get = await prisma.usuarios.findMany({
         where: {
@@ -132,10 +132,10 @@ routes.post('/', async (req, res) => {
 
 //Actualizar usuario
 // routes.patch('/:id', async (req, res) => {
-routes.patch('/:id', [verifyToken],async (req, res) => {
-    const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE} = req.body
-    const id = parseInt(""+Number(req.params.id),10)
-    
+routes.patch('/:id', [verifyToken], async (req, res) => {
+    const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE } = req.body
+    const id = parseInt("" + Number(req.params.id), 10)
+
     const update = await prisma.usuarios.update({
         where: {
             ID_USUARIOS: id,
@@ -149,30 +149,30 @@ routes.patch('/:id', [verifyToken],async (req, res) => {
 
 //Agregar log de cambios
 routes.post('/changes/:id', [verifyToken], async (req, res) => {
-// routes.patch('/:id',async (req, res) => {
-    const {PREV_DATA, CURRENT_DATA } = req.body
-    const id = parseInt(""+Number(req.params.id),10)
-    
+    // routes.patch('/:id',async (req, res) => {
+    const { PREV_DATA, CURRENT_DATA } = req.body
+    const id = parseInt("" + Number(req.params.id), 10)
+
     const ip = req.socket.remoteAddress.split("::ffff:");
-    
+
     const post = await prisma.historic_usuario.create({
         data: {
             ID_USUARIOS: id, DATE: new Date(), IP: ip[1],
-            PREV_DATA: PREV_DATA , CURRENT_DATA: CURRENT_DATA ,
+            PREV_DATA: PREV_DATA, CURRENT_DATA: CURRENT_DATA,
         }
     })
     console.log(post)
-    
+
     return res
 })
 
 //Eliminar usuario
-routes.patch('/delete', [verifyToken,isAdmin],async (req, res) => {
+routes.patch('/delete', [verifyToken, isAdmin], async (req, res) => {
     // routes.patch('/delete/:id', async (req, res) => {
 
     // const id = 0
     // if (req.body) {
-    const id = parseInt(""+req.body, 10)
+    const id = parseInt("" + req.body, 10)
     // } else {
     //     id = parseInt(req.params.id)
     // }
@@ -201,7 +201,7 @@ routes.patch('/delete', [verifyToken,isAdmin],async (req, res) => {
 // })
 
 //Obtener páginas de usuarios
-routes.get('/page/:num', async (req, res) => {
+routes.get('/page/:num', [verifyToken], async (req, res) => {
     const page = req.params.num
     const min = ((page - 1) * 100)
     const get = await prisma.usuarios.findMany({
@@ -212,7 +212,7 @@ routes.get('/page/:num', async (req, res) => {
 })
 
 //Obtener página de usuario activo
-routes.get('/pageActive/:num',[verifyToken], async (req, res) => {
+routes.get('/pageActive/:num', [verifyToken], async (req, res) => {
     const page = req.params.num
     const min = ((page - 1) * 100)
     const get = await prisma.usuarios.findMany({
@@ -224,7 +224,7 @@ routes.get('/pageActive/:num',[verifyToken], async (req, res) => {
 })
 
 //Agregar rol
-routes.post('/rol',[verifyToken], async (req, res) => {
+routes.post('/rol', [verifyToken], async (req, res) => {
     const { NAME, DESCRIPTION, STATE } = req.body
     const post = await prisma.rol.create({
         data: {
@@ -235,13 +235,13 @@ routes.post('/rol',[verifyToken], async (req, res) => {
 })
 
 //obtener todos los roles
-routes.get('/rols', [verifyToken],async (req, res) => {
+routes.get('/rols', [verifyToken], async (req, res) => {
     const get = await prisma.rol.findMany()
     res.send(get)
 })
 
 //obtener rol por id
-routes.get('/rol',[verifyToken], async (req, res) => {
+routes.get('/rol', [verifyToken], async (req, res) => {
     const { ID_ROL } = req.body
     const get = await prisma.rol.findMany({
         where: { ID_ROL: ID_ROL }
@@ -249,7 +249,7 @@ routes.get('/rol',[verifyToken], async (req, res) => {
 })
 
 //editar rol
-routes.patch('/rol',[verifyToken], async (req, res) => {
+routes.patch('/rol', [verifyToken], async (req, res) => {
     const { ID_ROL, NAME, DESCRIPTION, STATE } = req.body
     const set = await prisma.rol.update({
         where: { ID_ROL: ID_ROL },
@@ -260,7 +260,7 @@ routes.patch('/rol',[verifyToken], async (req, res) => {
 })
 
 //agregar rol a un usuario
-routes.post('/userRol',[verifyToken], async (req, res) => {
+routes.post('/userRol', [verifyToken], async (req, res) => {
     const { ID_USUARIOS, ID_ROL, STATE } = req.body
     const post = await prisma.ussers_rol.create({
         data: {
@@ -271,7 +271,7 @@ routes.post('/userRol',[verifyToken], async (req, res) => {
 })
 
 //ver roles de un usuario
-routes.get('/userRol',[verifyToken], async (req, res) => {
+routes.get('/userRol', [verifyToken], async (req, res) => {
     const { ID_USUARIOS } = req.body
     const get = await prisma.ussers_rol.findMany({
         where: { ID_USUARIOS: ID_USUARIOS }
@@ -280,31 +280,33 @@ routes.get('/userRol',[verifyToken], async (req, res) => {
 })
 
 //SIGN
-routes.post('/login', async(req, res) => {
+routes.post('/login', async (req, res) => {
     const { EMAIL, PASSWORD } = req.body;
     const get = await prisma.usuarios.findMany({
-        
+
         where: {
             "EMAIL": EMAIL
         }
     })
-    const getPassword= await prisma.autentication.findMany({
+    const getPassword = await prisma.autentication.findMany({
         where: {
             "ID_USUARIO": get[0].ID_USUARIOS
         }
     })
-    if(get.length>0&&await bcryptjs.compare(PASSWORD,getPassword[0].HASH) ){
+    if (get.length > 0 && await bcryptjs.compare(PASSWORD, getPassword[0].HASH)) {
         const token = jwt.sign({ id: get[0].ID_USUARIOS }, "Secret_word", {
             expiresIn: "1h"
         })
-    
-    const rol = await prisma.rol.findMany({
-        where: {
-            "ID_ROL":get[0].ID_ROL}
-    })
+
+        const rol = await prisma.rol.findMany({
+            where: {
+                "ID_ROL": get[0].ID_ROL
+            }
+        })
 
         res.status(200).json(
-            {token:token,rol:rol[0].NAME,name:get[0].NAME
+            {
+                token: token, rol: rol[0].NAME, name: get[0].NAME
             })
     }
     // if (!EMAIL || !PASSWORD) return res.sendStatus(400)
@@ -319,7 +321,7 @@ routes.post('/login', async(req, res) => {
     //     return res.sendStatus(401)
     // }
 })
-    
+
 
 // //Authorizacion: Bearer <token>
 // function verifyToken(req, res, next) {

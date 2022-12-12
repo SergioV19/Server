@@ -8,7 +8,7 @@ app.use(cors({
     origin:'*'
 }));
 const routes = require('./routes')
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3200;
 
 
 

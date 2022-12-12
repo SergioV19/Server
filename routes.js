@@ -311,9 +311,15 @@ routes.post('/login', async (req, res) => {
             expiresIn: "1h"
         })
 
+        const userol = await prisma.ussers_rol.findMany({
+            where: {
+                "ID_USUARIOS": get[0].ID_USUARIOS
+            }
+        })
+
         const rol = await prisma.rol.findMany({
             where: {
-                "ID_ROL": get[0].ID_ROL
+                "ID_ROL": userol[0].ID_ROL
             }
         })
 

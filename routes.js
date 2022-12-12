@@ -113,7 +113,7 @@ routes.get('/mail', async (req, res) => {
 
 
 //INSTERAR NUEVO usuario con contraseña 
-routes.post('/', async (req, res) => {
+routes.post('/new', async (req, res) => {
     console.log('llega')
     const { NAME, LAST_NAME, EMAIL, TYPE_DOCUMENT, DOCUMENT, STATE, PASSWORD } = req.body
     const post = await prisma.usuarios.create({
@@ -128,8 +128,16 @@ routes.post('/', async (req, res) => {
             ID_USUARIO: id, CREDENTIAL: "a", HASH: passwordhash, STATE: "a"
         }
     })
+
+    const autorol = await prisma.ussers_rol.create({
+        data: {
+            ID_USUARIOS: id, ID_ROL: "3", STATE: "a"
+        }
+    })
+
     console.log(post)
     console.log(postpass)
+    console.log(autorol)
 })
 
 //Actualizar usuario

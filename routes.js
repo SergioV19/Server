@@ -131,7 +131,7 @@ routes.post('/usr', async (req, res) => {
 
     const autorol = await prisma.ussers_rol.create({
         data: {
-            ID_USUARIOS: parseInt(id,10), ID_ROL: "3", STATE: "a"
+            CREATION_DATE: new Date(), STATE: "a", ID_USUARIOS: parseInt(id,10), ID_ROL: "3"
         }
     })
 
